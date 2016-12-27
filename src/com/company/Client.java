@@ -1,11 +1,7 @@
 package com.company;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Created by tyuly on 29.11.2016.
@@ -14,7 +10,7 @@ public class Client implements Serializable {
     static int file = 0;
     private String name;
     private String surname;
-    private ArrayList<Card> cards = new ArrayList<Card>();
+    private ArrayList<Account> accounts = new ArrayList<Account>();
     public long version = 100;
 
 
@@ -32,8 +28,8 @@ public class Client implements Serializable {
         return surname;
     }
 
-    public ArrayList<Card> getCards() {
-        return cards;
+    public ArrayList<Account> getAccounts() {
+        return accounts;
     }
 
     public void setName(String name) {
@@ -44,8 +40,8 @@ public class Client implements Serializable {
         this.surname = surname;
     }
 
-    public void setCards(Card card) {
-        cards.add(card);
+    public void setAccounts(Account account) {
+        accounts.add(account);
     }
 
 }

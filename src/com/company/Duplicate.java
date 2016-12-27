@@ -6,7 +6,7 @@ package com.company;
 public class Duplicate extends Exception {
     Duplicate (Object o) {
         super();
-        if (o instanceof Card) {
+        if (o instanceof Account) {
            System.out.println("Такой номер карты уже имеется. Следует ввести другой номер");
         }
         if (o instanceof Client) {

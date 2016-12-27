@@ -2,11 +2,10 @@ package com.company;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.company.Client.file;
 
 /**
  * Created by tyuly on 29.11.2016.
@@ -15,15 +14,17 @@ public class Bank implements Terminal {
 
     private Logger log = Logger.getLogger(Bank.class.getName());
     static ArrayList<Client> clients = new ArrayList<Client>();
-    static ArrayList<Card> cards = new ArrayList<Card>();
+    static ArrayList<Account> accounts = new ArrayList<Account>();
     private Scanner in = new Scanner(System.in);
     private String defaultPin = "1234";
+    static Random random = new Random();
+
 
     @Override
     public double checkCount() {
         System.out.println("Введите номер счета");
         String s = in.nextLine();
-        for (Card c:cards) {
+        for (Account c: accounts) {
             if (c.getNumber().equals(s)) {
                 checkCardPin(0,c);
                 return c.getCount();
@@ -38,7 +39,7 @@ public class Bank implements Terminal {
         double sum;
         System.out.println("Введите номер счета");
         String s = in.nextLine();
-        for (Card c : cards) {
+        for (Account c : accounts) {
             if (c.getNumber().equals(s)) {
                 checkCardPin(0,c);
                 System.out.println("Введите сумму");
@@ -58,7 +59,7 @@ public class Bank implements Terminal {
         double sum;
         System.out.println("Введите номер счета");
         String s = in.nextLine();
-        for (Card c : cards) {
+        for (Account c : accounts) {
             if (c.getNumber().equals(s)) {
                 checkCardPin(0,c);
                 System.out.println("Введите сумму");
@@ -122,9 +123,9 @@ public class Bank implements Terminal {
         String s [] = in.nextLine().split("\\s");
         for (Client c:clients) {
             if ((c.getName().equals(s[1])) && (c.getSurname().equals(s[0]))) {
-                for (Card card: cards) {
-                    if (card.getClient().equals(c)) {
-                        cards.remove(card);
+                for (Account account : accounts) {
+                    if (account.getClient().equals(c)) {
+                        accounts.remove(account);
                     }
                 }
                 clients.remove(c);
@@ -140,7 +141,7 @@ public class Bank implements Terminal {
         try {
             System.out.println("Введите номер карты");
             String s = in.nextLine();
-            for (Card c : cards) {
+            for (Account c : accounts) {
                 if (c.getNumber().equals(s)) {
                     throw new Duplicate(c);
                 }
@@ -156,14 +157,14 @@ public class Bank implements Terminal {
                     }
                 }
                 if (client != null) {
-                    Card card = new Card(client, s, pin);
-                    client.setCards(card);
-                    cards.add(card);
-                    //writeCardToFile(card);
-                    writeCardByteFile(card);
-                    FileOutputStream fos = new FileOutputStream("card" + Card.file + ".bin");
+                    Account account = new Account(client, s, pin);
+                    client.setAccounts(account);
+                    accounts.add(account);
+                    //writeCardToFile(account);
+                    writeCardByteFile(account);
+                    FileOutputStream fos = new FileOutputStream("account" + Account.file + ".bin");
                     ObjectOutputStream oos = new ObjectOutputStream(fos);
-                    oos.writeObject(card);
+                    oos.writeObject(account);
                     oos.flush();
                     oos.close();
                     fos.close();
@@ -191,20 +192,20 @@ public class Bank implements Terminal {
     @Override
     public void deleteCard() {
         checkDefaultPin(0);
-        Card cc = null;
+        Account cc = null;
         System.out.println("Введите номер карты");
         String s = in.nextLine();
-        for (Card c:cards) {
+        for (Account c: accounts) {
             if (c.getNumber().equals(s)) {
                 cc = c;
             }
         }
-        cards.remove(cc);
+        accounts.remove(cc);
         for ( Client c: clients) {
-            ArrayList<Card> cards2 = c.getCards();
-            for (Card card:cards) {
-                if (card.getNumber().equals(s)) {
-                    cc = card;
+            ArrayList<Account> cards2 = c.getAccounts();
+            for (Account account : accounts) {
+                if (account.getNumber().equals(s)) {
+                    cc = account;
                 }
             }
             cards2.remove(cc);
@@ -227,11 +228,11 @@ public class Bank implements Terminal {
 
     public  void getCards() {
         checkDefaultPin(0);
-        if (Bank.cards.size() == 0) {
+        if (Bank.accounts.size() == 0) {
             System.out.println("Карт нет");
         } else {
-            for (Card card : Bank.cards) {
-                System.out.println(card.getClient() + " " + card.getPin() + " " + card.getNumber() + " " + card.getCount());
+            for (Account account : Bank.accounts) {
+                System.out.println(account.getClient() + " " + account.getPin() + " " + account.getNumber() + " " + account.getCount());
             }
         }
     }
@@ -266,14 +267,14 @@ public class Bank implements Terminal {
 
     }
 
-    public void checkCardPin(int k, Card card) {
+    public void checkCardPin(int k, Account account) {
         System.out.println("Введите pin");
         String pin = in.nextLine();
         boolean p = false;
         try {
             while (k <= 2) {
                 k++;
-                if (pin.equals(card.getPin())) {
+                if (pin.equals(account.getPin())) {
                     break;
                 } else {
                     throw new InvalidPin();
@@ -283,7 +284,7 @@ public class Bank implements Terminal {
         catch (InvalidPin i) {
             try {
                 if (k <= 2) {
-                    checkCardPin(k,card);
+                    checkCardPin(k, account);
                     k++;
                 } else {
                     throw new AccountLock();
@@ -295,10 +296,10 @@ public class Bank implements Terminal {
         }
     }
 
-    public void writeCardToFile(Card card) {
+    public void writeCardToFile(Account account) {
         try {
-            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter("card.txt")));
-            printWriter.println(card.getNumber() + " " + card.getPin() + " " + card.getCount() + " " + card.getClient().getName() + " " + card.getClient().getSurname());
+            PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter("account.txt")));
+            printWriter.println(account.getNumber() + " " + account.getPin() + " " + account.getCount() + " " + account.getClient().getName() + " " + account.getClient().getSurname());
             printWriter.close();
         } catch (IOException e) {
             System.out.println("Ошибка записи");
@@ -338,8 +339,8 @@ public class Bank implements Terminal {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader("client.txt"));
             StreamTokenizer st = new StreamTokenizer(bufferedReader);
-           // String s [] = bufferedReader.readLine().split("\\s");
-           // Client client = new Client(s[1],s[0]);
+            // String s [] = bufferedReader.readLine().split("\\s");
+            // Client client = new Client(s[1],s[0]);
             //clients.add(client);
             String s = "";
             while (st.nextToken() != StreamTokenizer.TT_EOF) {
@@ -353,15 +354,15 @@ public class Bank implements Terminal {
         }
     }
 
-    public void writeCardByteFile(Card card) {
+    public void writeCardByteFile(Account account) {
         try {
-            DataOutputStream out = new DataOutputStream(new FileOutputStream("card.bin")); //файл
+            DataOutputStream out = new DataOutputStream(new FileOutputStream("account.bin")); //файл
             //DataOutputStream out = new DataOutputStream(System.out); //консоль
-            out.writeUTF(card.getNumber());
-            out.writeUTF(card.getPin());
-            out.writeUTF(card.getClient().getName());
-            out.writeUTF(card.getClient().getSurname());
-            out.writeDouble(card.getCount());
+            out.writeUTF(account.getNumber());
+            out.writeUTF(account.getPin());
+            out.writeUTF(account.getClient().getName());
+            out.writeUTF(account.getClient().getSurname());
+            out.writeDouble(account.getCount());
             out.close();
         } catch (IOException i) {
             System.out.println("Ошибка");
@@ -408,6 +409,38 @@ public class Bank implements Terminal {
             System.out.println("Some error occurred!");
         }
 
+    }
+
+    public Account getCard () {
+        System.out.println("Введите номер счета");
+        String s = in.nextLine();
+        for (Account c: accounts) {
+            if (c.getNumber().equals(s)) {
+               // checkCardPin(0,c);
+                return c;
+            }
+        }
+        return null;
+
+    }
+
+    public  void putThread(Account account) {
+        int sum = random.nextInt(1000)+1;
+        account.setCount(sum);
+        System.out.println("Счет пополнен на " + sum);
+        System.out.println("Состояние счета " + account.getCount());
+    }
+
+    public   void pullThread(Account account) {
+        int sum = random.nextInt(1000)+1;
+        if (account.getCount() >= sum) {
+            account.setCount(-sum);
+            System.out.println("Со счета списано " + sum);
+            System.out.println("Состояние счета " + account.getCount());
+        }
+        else {
+            System.out.println("Невозможно снять деньги");
+        }
     }
 
 }
